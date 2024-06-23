@@ -1,5 +1,5 @@
 ﻿
-# Rollercoaster Designer v1.1
+# Rollercoaster Designer v1.2
 ![Title](https://user-images.githubusercontent.com/33422437/228783876-e99047ac-571a-4592-9801-ed93a4c37a73.png)
 
 A toolset for creating and operating realistic rollercoasters in Unity. Includes a full integration into the Unity Editor.
@@ -29,7 +29,8 @@ Download Location: https://github.com/CMDRSpirit/RollercoasterDesigner/releases
 - Physics model (Rolling / Air resistance)
 - Full integration into Unity (Terrain system, programming, HDRP / URP, ...)
 - Superior graphics capabilities compared to other coaster simulators (Baked Lighting, GI, Ray Tracing (HDRP), ...)
-
+- Multiple track types (Normal, Breaks, Lift, Booster, Trim Brakes)
+  
 ## Future work
 - Improved physics and audio
 - Better spline handling (Position nodes not always 1t apart)
@@ -48,15 +49,13 @@ Download Location: https://github.com/CMDRSpirit/RollercoasterDesigner/releases
 Older versions should also work, I just didn't test it.
 
 ## Changelog
-### v1.1
+### v1.2
 Additions:
-- NURBS splines
-- NoLimits 2 track importing
-- Train and track audio
-- Track supports generation
-- Needs [Unity NURBS](https://github.com/komietty/unity-nurbs) from now on
+- Booster Track Type
+- Trim Brake Track Type
+- Static & Dynamic Target Velocity
+  
 
 Improvements:
-- Editor performance 
-- Automatic generation of sensor events for block sections
-- Changed definition of trains using attached scripts instead of structs
+- Fixed bug dealing with drops 
+
