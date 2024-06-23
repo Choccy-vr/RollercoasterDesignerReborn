@@ -22,9 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
@@ -34,16 +32,18 @@ using UnityEditor;
 
 namespace Rollercoaster
 {
+    [RequireComponent(typeof(SimpleTrackController))]
     public class CoasterTrack : MonoBehaviour
     {
         public TrackDescription DefaultTrackDescription;
         public Material DefaultTrackMaterial;
-
+        public float slopeLimit = 10.0f;
         public bool IsClosed = false;
-
+        // Store the initial z-value when the player starts building the roller coaster
+        float initialZ;
         public List<TrackSection> TrackSections;
         public float TMax { get; private set; }
-
+        
         private void Awake()
         {
             CombineSections();
@@ -76,9 +76,22 @@ namespace Rollercoaster
                 sa.NextSection = sb;
 
                 sb.transform.position = sa.transform.TransformPoint(sa.NodesPosition[sa.NodesPosition.Count - 1]);
-                sb.StartSlope = sa.EvaluateDerivative(sa.getTMax());
+                
+                if (IsDrop(sb.StartSlope, sb.EndSlope))
+                {
+                    initialZ = sb.StartSlope.z;
+                    // If it's a drop, limit the start slope of the next segment
+                    sb.StartSlope = sa.EvaluateDerivative(sa.getTMax());
+                    sb.StartSlope.z = initialZ;
 
-                if(IsClosed && i == TrackSections.Count - 1)
+                }
+                else
+                {
+                    // If it's not a drop, use the end slope of the current segment as the start slope of the next segment
+                    sb.StartSlope = sa.EvaluateDerivative(sa.getTMax());
+                }
+                
+                if (IsClosed && i == TrackSections.Count - 1)
                 {
                     sa = TrackSections[0];
                     sb.EndSlope = sa.EvaluateDerivative(0);
@@ -121,6 +134,13 @@ namespace Rollercoaster
             }
             return 0;
         }
+        public bool IsDrop(float3 startSlope, float3 endSlope)
+        {
+            // This is a simple check where if the y-component of the end slope is less than the start slope, we consider it a drop
+            // You might need to adjust this logic based on how you're defining a 'drop' in your game
+            return endSlope.z < startSlope.z;
+        }
+        
 
         public float DeltaMToDeltaTNegative(float t0, float deltaM)
         {
@@ -241,7 +261,7 @@ namespace Rollercoaster
             int secidx = TrackSections.IndexOf(sec);
             var sec1 = AddSection(secidx + 1);
             sec1.splineType = sec.splineType;
-
+            Debug.LogWarning(sec1.StartSlope + " " + slope);
             sec1.NodesPosition = np1;
             sec1.NodesRoll = nr1;
             sec1.StartSlope = slope;

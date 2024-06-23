@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fbdd4109253bd54b8eb5a8d13936bfb, type: 3}
+  m_Name: SimpleTrackBooster
+  m_EditorClassIdentifier: 
+  HeartlineOffset: 0.75
+  TrackWidth: 0.823
+  TrackMesh: {fileID: 5030995497119280449, guid: bbf79bfefcfe3c442ab23ff30056cb8e,
+    type: 3}
+  MeshLength: 1
+  TrackGizmoColor: {r: 0, g: 0.8352941, b: 1, a: 1}
+  TrackObjects: []
+  AffectsTrain: 1
+  Acceleration: 17
+  Breaking: 0
+  TargetVelocity: 0
+  PhysicsActive: 1
+  StopTrain: 0
+  StaticTargetVelocity: 0

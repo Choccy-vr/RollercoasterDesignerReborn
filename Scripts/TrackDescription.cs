@@ -51,7 +51,13 @@ namespace Rollercoaster
             public float Offset;
         }
         public TrackObject[] TrackObjects;
-
+        public bool AffectsTrain;
+        public float Acceleration;
+        public float Breaking;
+        public float TargetVelocity;
+        public bool PhysicsActive;
+        public bool StopTrain;
+        public bool StaticTargetVelocity;
         //Mesh Generation
         public GameObject GenerateMesh(TrackSection section)
         {

@@ -60,10 +60,12 @@ namespace Rollercoaster
         public float TargetVelocity;
         public bool PhysicsActive;
         public bool StopTrain;
+        public bool StaticTargetVelocity;
         //
 
         public SplineType splineType = SplineType.CUBIC;
         public float3 StartSlope;
+        private float3 oldSlope;
         public float3 EndSlope;
         public List<float3> NodesPosition;
         public List<float2> NodesRoll;
@@ -77,14 +79,21 @@ namespace Rollercoaster
         private GameObject trackMeshObject;
 
         private bool IsFitted;
-
+        private bool DefaultsApplied = false;
+        private TrackDescription CurrentTrack;
         private void Awake()
         {
             UpdateSpline();
+            CurrentTrack = TrackDesc;
         }
 
         private void OnValidate()
         {
+            if(CurrentTrack != TrackDesc)
+            {
+                DefaultsApplied = false;
+                CurrentTrack = TrackDesc;
+            }
             if (NodesPosition == null)
             {
                 NodesPosition = new List<float3>();
@@ -97,7 +106,18 @@ namespace Rollercoaster
                 NodesRoll.Add(0);
                 NodesRoll.Add(float2(1, 0));
             }
-
+            if (TrackDesc != null && !DefaultsApplied)
+            {
+                AffectsTrain = TrackDesc.AffectsTrain;
+                Acceleration = TrackDesc.Acceleration;
+                Breaking = TrackDesc.Breaking;
+                TargetVelocity = TrackDesc.TargetVelocity;
+                PhysicsActive = TrackDesc.PhysicsActive;
+                StopTrain = TrackDesc.StopTrain;
+                StaticTargetVelocity = TrackDesc.StaticTargetVelocity;
+                DefaultsApplied = true;
+            }
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 1");
             UpdateSpline();
         }
 
@@ -107,13 +127,35 @@ namespace Rollercoaster
         {
             if (!AffectsTrain || !PhysicsActive)
                 return;
+            if (!StaticTargetVelocity)
+            {
+                float vel = train.velocity;
+                float acc;
+                if (StopTrain)
+                {
+                    // Apply breaking if stopping the train
+                    acc = -Breaking;
+                }
+                else
+                {
+                    // Apply acceleration to gain speed
+                    acc = Acceleration;
+                }
 
-            float targetVel = StopTrain ? 0 : TargetVelocity;
-            float vel = train.velocity;
-            float deltaSpeed = targetVel - vel;
-            float acc = deltaSpeed > 0 ? (1 - exp(- deltaSpeed * 8)) * Acceleration : -Breaking;
+                // Calculate the new velocity
+                train.velocity = vel + acc * deltaTime;
+            }
+            else
+            {
+                float targetVel = StopTrain ? 0 : TargetVelocity;
+                float Staticvel = train.velocity;
+                float deltaSpeed = targetVel - Staticvel;
+                float Staticacc = deltaSpeed > 0 ? (1 - exp(-deltaSpeed * 8)) * Acceleration : -Breaking;
 
-            train.velocity = StopTrain ? vel + max(deltaSpeed, acc * deltaTime) : vel + acc * deltaTime;
+                train.velocity = StopTrain ? Staticvel + max(deltaSpeed, Staticacc * deltaTime) : Staticvel + Staticacc * deltaTime;
+            }
+
+            
         }
 
         // ################# Spline Generation ######################
@@ -133,9 +175,11 @@ namespace Rollercoaster
                 ys[i] = cp.y;
                 zs[i] = cp.z;
             }
-
+            
             float3 startSlope = lengthsq(StartSlope) != 0 ? StartSlope : float.NaN;
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 2");
             float3 endSlope = lengthsq(EndSlope) != 0 ? EndSlope : float.NaN;
+            
 
             if(splineType == SplineType.CUBIC)
             {
@@ -151,8 +195,11 @@ namespace Rollercoaster
             }
 
             splineX.Fit(ts, xs, startSlope: startSlope.x, endSlope: endSlope.x);
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 3");
             splineY.Fit(ts, ys, startSlope: startSlope.y, endSlope: endSlope.y);
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 4");
             splineZ.Fit(ts, zs, startSlope: startSlope.z, endSlope: endSlope.z);
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 5");
 
             //Roll          
             float[] trs = new float[NodesRoll.Count];
@@ -165,7 +212,7 @@ namespace Rollercoaster
 
             splineRoll = new CubicSpline();
             splineRoll.Fit(trs, rs, startSlope: 0, endSlope: 0);
-
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 6");
             //Right vector
             splineRX = new CubicSpline();
             splineRY = new CubicSpline();
@@ -183,9 +230,11 @@ namespace Rollercoaster
                 rzs[i] = r.z;
             }
             splineRX.Fit(trs, rxs, startSlope: 0, endSlope: 0);
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 7");
             splineRY.Fit(trs, rys, startSlope: 0, endSlope: 0);
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 8");
             splineRZ.Fit(trs, rzs, startSlope: 0, endSlope: 0);
-
+            Debug.Log(TrackDesc.name + ": " + StartSlope + " 9");
 
             //Calculate spline length
             SplineLength = 0;
@@ -201,7 +250,12 @@ namespace Rollercoaster
 
             IsFitted = true;
         }
-
+        private bool ShouldUpdateSpline()
+        {
+            // Add your logic here to determine if UpdateSpline should be called
+            // For example, check if StartSlope has been set or if other conditions are met
+            return true; // Replace with actual condition
+        }
         // ################# Evaluation ######################
         public float getTMax()
         {
@@ -238,9 +292,10 @@ namespace Rollercoaster
 
         public float3 EvaluateDerivative(float t)
         {
+            
             if (!IsFitted || splineX == null)
                 return float3(0, 0, 1);
-
+            
             return float3(splineX.EvalSlope(t), splineY.EvalSlope(t), splineZ.EvalSlope(t));
         }
 
@@ -462,7 +517,9 @@ namespace Rollercoaster
             //Slopes
             float3 ps = 0, pe = 0;
             if (lengthsq(track.StartSlope) != 0)
+            {
                 ps = (float3)Handles.PositionHandle(track.StartSlope + track.NodesPosition[0], Quaternion.LookRotation(normalize(track.EvaluateDerivative(0)), Vector3.up)) - track.NodesPosition[0];
+            }
             if (lengthsq(track.EndSlope) != 0)
                 pe = (float3)Handles.PositionHandle(track.EndSlope + track.NodesPosition[track.NodesPosition.Count - 1], Quaternion.LookRotation(normalize(track.EvaluateDerivative(track.getTMax())), Vector3.up)) - track.NodesPosition[track.NodesPosition.Count - 1];
 
@@ -547,6 +604,7 @@ namespace Rollercoaster
                         ct.SplitSection(track, i);
 
                         ps = track.StartSlope;
+                        Debug.Log(track.name + ": " + track.StartSlope + " 10");
                         pe = track.EndSlope;
 
                         break;
@@ -664,6 +722,7 @@ namespace Rollercoaster
 
                 if (length(ps - track.StartSlope) > 0.01f)
                     track.StartSlope = ps;
+                Debug.Log(track.name + ": " + track.StartSlope + " 11");
                 if (length(pe - track.EndSlope) > 0.01f)
                     track.EndSlope = pe;
 
