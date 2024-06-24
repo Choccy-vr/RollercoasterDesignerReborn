@@ -77,10 +77,9 @@ namespace Rollercoaster
 
                 sb.transform.position = sa.transform.TransformPoint(sa.NodesPosition[sa.NodesPosition.Count - 1]);
                 
-                if (IsDrop(sb.StartSlope, sb.EndSlope))
+                if (IsDrop(sb))
                 {
                     initialZ = sb.StartSlope.z;
-                    // If it's a drop, limit the start slope of the next segment
                     sb.StartSlope = sa.EvaluateDerivative(sa.getTMax());
                     sb.StartSlope.z = initialZ;
 
@@ -134,11 +133,11 @@ namespace Rollercoaster
             }
             return 0;
         }
-        public bool IsDrop(float3 startSlope, float3 endSlope)
+        public bool IsDrop(TrackSection sb)
         {
-            // This is a simple check where if the y-component of the end slope is less than the start slope, we consider it a drop
+            // This is a simple check where if the z-component of the end slope is less than the start position, we consider it a drop
             // You might need to adjust this logic based on how you're defining a 'drop' in your game
-            return endSlope.z < startSlope.z;
+            return sb.NodesPosition[0].z > sb.NodesPosition[sb.NodesPosition.Count - 1].z;
         }
         
 
@@ -261,7 +260,6 @@ namespace Rollercoaster
             int secidx = TrackSections.IndexOf(sec);
             var sec1 = AddSection(secidx + 1);
             sec1.splineType = sec.splineType;
-            Debug.LogWarning(sec1.StartSlope + " " + slope);
             sec1.NodesPosition = np1;
             sec1.NodesRoll = nr1;
             sec1.StartSlope = slope;

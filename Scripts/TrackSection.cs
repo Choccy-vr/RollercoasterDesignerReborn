@@ -117,7 +117,7 @@ namespace Rollercoaster
                 StaticTargetVelocity = TrackDesc.StaticTargetVelocity;
                 DefaultsApplied = true;
             }
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 1");
+            
             UpdateSpline();
         }
 
@@ -177,7 +177,7 @@ namespace Rollercoaster
             }
             
             float3 startSlope = lengthsq(StartSlope) != 0 ? StartSlope : float.NaN;
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 2");
+            
             float3 endSlope = lengthsq(EndSlope) != 0 ? EndSlope : float.NaN;
             
 
@@ -195,11 +195,11 @@ namespace Rollercoaster
             }
 
             splineX.Fit(ts, xs, startSlope: startSlope.x, endSlope: endSlope.x);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 3");
+            
             splineY.Fit(ts, ys, startSlope: startSlope.y, endSlope: endSlope.y);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 4");
+            
             splineZ.Fit(ts, zs, startSlope: startSlope.z, endSlope: endSlope.z);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 5");
+            
 
             //Roll          
             float[] trs = new float[NodesRoll.Count];
@@ -212,7 +212,7 @@ namespace Rollercoaster
 
             splineRoll = new CubicSpline();
             splineRoll.Fit(trs, rs, startSlope: 0, endSlope: 0);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 6");
+            
             //Right vector
             splineRX = new CubicSpline();
             splineRY = new CubicSpline();
@@ -230,11 +230,11 @@ namespace Rollercoaster
                 rzs[i] = r.z;
             }
             splineRX.Fit(trs, rxs, startSlope: 0, endSlope: 0);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 7");
+           
             splineRY.Fit(trs, rys, startSlope: 0, endSlope: 0);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 8");
+            
             splineRZ.Fit(trs, rzs, startSlope: 0, endSlope: 0);
-            Debug.Log(TrackDesc.name + ": " + StartSlope + " 9");
+            
 
             //Calculate spline length
             SplineLength = 0;
@@ -604,7 +604,7 @@ namespace Rollercoaster
                         ct.SplitSection(track, i);
 
                         ps = track.StartSlope;
-                        Debug.Log(track.name + ": " + track.StartSlope + " 10");
+                        
                         pe = track.EndSlope;
 
                         break;
@@ -722,7 +722,7 @@ namespace Rollercoaster
 
                 if (length(ps - track.StartSlope) > 0.01f)
                     track.StartSlope = ps;
-                Debug.Log(track.name + ": " + track.StartSlope + " 11");
+                
                 if (length(pe - track.EndSlope) > 0.01f)
                     track.EndSlope = pe;
 
