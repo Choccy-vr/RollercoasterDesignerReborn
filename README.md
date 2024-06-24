@@ -1,4 +1,4 @@
-﻿
+
 # Rollercoaster Designer v1.2
 ![Title](https://user-images.githubusercontent.com/33422437/228783876-e99047ac-571a-4592-9801-ed93a4c37a73.png)
 
@@ -58,4 +58,5 @@ Additions:
 
 Improvements:
 - Fixed bug dealing with drops 
+- Changed location of the sample track descriptions to the Scripts folder
 
